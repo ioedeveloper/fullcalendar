@@ -1,0 +1,2342 @@
+﻿@using Microsoft.AspNet.Identity
+@using SwiftKampus.ViewModels
+@using SwiftKampus.Models
+
+@{
+    BaseVm model = (BaseVm)ViewBag.LayoutViewModel;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>@SchoolSetUp.CurrentSchoolName | @ViewBag.Title</title>
+    <link rel="icon" type="image/png" href="~/Content/Images/@SchoolSetUp.SchoolLogo">
+    <!-- BEGIN META -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="@SchoolSetUp.Keywords">
+    <meta name="description" content="@SchoolSetUp.Description">
+    <!-- END META -->
+    <!-- BEGIN STYLESHEETS -->
+
+    <link href="~/AdminTemplate/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/AdminTemplate/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="~/AdminTemplate/css/plugins/dataTables/datatables.min.css" rel="stylesheet">
+    <!-- Toastr style -->
+    <link href="~/AdminTemplate/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <!-- Gritter -->
+    <link href="~/AdminTemplate/js/plugins/gritter/jquery.gritter.css" rel="stylesheet">
+
+    <link href="~/AdminTemplate/css/animate.css" rel="stylesheet">
+
+    <link href="~/AdminTemplate/css/aauastyle.css" rel="stylesheet">
+
+    <link href="~/AdminTemplate/css/plugins/iCheck/custom.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/AdminTemplate/css/plugins/jQueryUI/jquery-ui.css">
+    <link href="~/AdminTemplate/css/plugins/fullcalendar/fullcalendar.css" rel="stylesheet">
+    <link href="~/AdminTemplate/css/plugins/fullcalendar/fullcalendar.print.css" rel='stylesheet' media='print'>
+    <link href="~/AdminTemplate/css/style.css" rel="stylesheet">
+
+
+</head>
+<body class="menubar-hoverable header-fixed menubar-pin ">
+    <div id="wrapper">
+        <nav class="navbar-default navbar-static-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav metismenu" id="side-menu">
+                    <li class="nav-header">
+                        <div class="dropdown profile-element">
+
+                            @if (User.IsInRole("Academic") || User.IsInRole("None-Academic"))
+                            {
+                            <img alt="image" class="img-circle img-responsive img-backdrop" src="@Url.Action("RenderImage", "Staffs", new { staffId = User.Identity.GetUserId()})" />
+                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                                <span class="clear">
+                                    <span class="block m-t-xs">
+                                        <strong class="font-bold">@ViewBag.FullName</strong>
+                                    </span> <span class="text-muted text-xs block">Staff <b class="caret"></b></span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                                <li><a href="#">Profile</a></li>
+                                <li><a href="@Url.Action("Index","Mailling")">Mailbox</a></li>
+                                <li class="divider"></li>
+                                <li><a href="@Url.Action("LogOff","Account")">Logout</a></li>
+                            </ul>
+                            }
+                            else if (User.IsInRole("Student"))
+                            {
+                            <img alt="image" class="img-circle img-responsive img-backdrop" src="@Url.Action("RenderImage", "Students", new {studentId = User.Identity.GetUserId()})" />
+                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                                <span class="clear">
+                                    <span class="block m-t-xs">
+                                        <strong class="font-bold">@ViewBag.FullName</strong>
+                                    </span> <span class="text-muted text-xs block">Student <b class="caret"></b></span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                                <li><a href="@Url.Action("GroupChat","Home")">Group Chat</a></li>
+                                <li><a href="@Url.Action("Index","Mailling")">Mailbox</a></li>
+                                <li class="divider"></li>
+                                <li><a href="@Url.Action("LogOff","Account")">Logout</a></li>
+                            </ul>
+                            }
+                            else
+                            {
+                            <img alt="image" class="img-circle img-responsive img-backdrop" src="~/Content/Images/profile.png" height="48" width="48" />
+                            @*<img alt="image" class="img-circle" src="@Url.Action("RenderImage", "Staffs", new { staffId = User.Identity.GetUserId()})" />*@
+                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                                <span class="clear">
+                                    <span class="block m-t-xs">
+                                        <strong class="font-bold">@ViewBag.FullName</strong>
+                                    </span> <span class="text-muted text-xs block"> <b class="caret"></b></span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                                <li><a href="#">Profile</a></li>
+                                <li><a href="@Url.Action("Index","Mailling")">Mailbox</a></li>
+                                <li class="divider"></li>
+                                <li><a href="@Url.Action("LogOff","Account")">Logout</a></li>
+                            </ul>
+                            }
+
+                        </div>
+                        <div class="logo-element">
+                            @SchoolSetUp.CurrentSchoolName
+                        </div>
+                    </li>
+
+                    @if (Request.IsAuthenticated && User.IsInRole("SuperAdmin"))
+                    {
+                    <li>
+                        <a href="@Url.Action("DashBoard", "Home")"><i class="fa fa-th-large"></i> <span class="nav-label">Dashboards</span> <span class="fa arrow"></span></a>
+                    </li>
+
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i> <span class="nav-label">School Settings</span>  <span class="pull-right label label-primary">SPECIAL</span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("School Name", "SchoolSetup", "Home")</li>
+                            <li>@Html.ActionLink("Faculty", "Index", "Faculties")</li>
+                            <li>@Html.ActionLink("Departments", "Index", "Departments")</li>
+                            <li>@Html.ActionLink("Dept Option", "Index", "Programmes")</li>
+                            <li>@Html.ActionLink("Sessions", "Index", "Sessions")</li>
+                            <li>@Html.ActionLink("Semesters", "Index", "Semesters")</li>
+                            <li>@Html.ActionLink("List Level", "Index", "Levels")</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-files-o"></i> <span class="nav-label">Manage Student/Staff</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Add Student", "Create", "Students")</li>
+                            <li>@Html.ActionLink("List Students", "Index", "Students")</li>
+                            <li>@Html.ActionLink("Excel Upload", "UploadStudent", "Students")</li>
+                            <li>@Html.ActionLink("Add Staff", "Create", "Staffs")</li>
+                            <li>@Html.ActionLink("List Staff", "Index", "Staffs")</li>
+                            <li>@Html.ActionLink("Staff Excel Upload", "UploadStaff", "Staffs")</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-globe"></i> <span class="nav-label">Course Management</span><span class="label label-info pull-right">NEW</span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("View Course", "Index", "Courses")</li>
+                            <li>@Html.ActionLink("View Registered Course", "RegisteredCourse", "CourseRegistrations")</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-flask"></i> <span class="nav-label">Fee Management</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Set Payment Type <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Type", "Index", "SchoolFeeTypes")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Type", "Index", "FacultyFeeTypes")</li>
+                                    <li>@Html.ActionLink("Dept Fee Type", "Index", "DepartmentFeeTypes")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Payment Record <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Payment", "MakePayment", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Payment", "Index", "ExamRules")</li>
+                                    <li>@Html.ActionLink("Dept Fee payment", "Index", "ExamRules")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="grid_options.html"><i class="fa fa-laptop"></i> <span class="nav-label">Grid options</span></a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-table"></i> <span class="nav-label">Tables</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="table_basic.html">Static Tables</a></li>
+                            <li><a href="table_data_tables.html">Data Tables</a></li>
+                            <li><a href="table_foo_table.html">Foo Tables</a></li>
+                            <li><a href="jq_grid.html">jqGrid</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-shopping-cart"></i> <span class="nav-label">E-commerce</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="ecommerce_products_grid.html">Products grid</a></li>
+                            <li><a href="ecommerce_product_list.html">Products list</a></li>
+                            <li><a href="ecommerce_product.html">Product edit</a></li>
+                            <li><a href="ecommerce_product_detail.html">Product detail</a></li>
+                            <li><a href="ecommerce-cart.html">Cart</a></li>
+                            <li><a href="ecommerce-orders.html">Orders</a></li>
+                            <li><a href="ecommerce_payments.html">Credit Card form</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-picture-o"></i> <span class="nav-label">Gallery</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="basic_gallery.html">Lightbox Gallery</a></li>
+                            <li><a href="slick_carousel.html">Slick Carousel</a></li>
+                            <li><a href="carousel.html">Bootstrap Carousel</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i> <span class="nav-label">Menu Levels </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Third Level <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>
+                                        <a href="#">Third Level Item</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Third Level Item</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Third Level Item</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><a href="#">Second Level Item</a></li>
+                            <li>
+                                <a href="#">Second Level Item</a>
+                            </li>
+                            <li>
+                                <a href="#">Second Level Item</a>
+                            </li>
+                        </ul>
+                    </li>
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Admin"))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("DashBoard", "Home")"><i class="fa fa-th-large"></i> <span class="nav-label">Dashboards</span> </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN SCHOOL SETUP -->
+                    <li>
+                        <a href="#"><i class="fa fa-cogs "></i> <span class="nav-label">School Settings</span> <span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Faculty", "Index", "Faculties")</li>
+                            <li>@Html.ActionLink("Departments", "Index", "Departments")</li>
+                            <li>@Html.ActionLink("Dept Option", "Index", "Programmes")</li>
+                            <li>@Html.ActionLink("Sessions", "Index", "Sessions")</li>
+                            <li>@Html.ActionLink("Semesters", "Index", "Semesters")</li>
+                            <li>@Html.ActionLink("List Level", "Index", "Levels")</li>
+                            <li>@Html.ActionLink("Final Level", "Index", "FacultyFinalLevels")</li>
+                        </ul>
+                    </li>
+ <!-- END SCHOOL SETUP -->
+
+ <!-- BEGIN UTILITY -->
+                    <li>
+                        <a href="#"><i class="fa fa-unlock-alt"></i> <span class="nav-label">Utilities</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Answer Faq", "Index", "Faqs")</li>
+
+                            <li>@Html.ActionLink("Remove Account", "RemoveUserAccount", "Account")</li>
+                            <li>@Html.ActionLink("Change User Email", "ChangeEmail", "Account")</li>
+
+                            <li>
+                                <a href="#" id="damian">Payment <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Remove Transaction", "RemoveTransaction", "SchoolFeePayments")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">System Audit <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("User History", "Index", "Audits")</li>
+                                    <li>@Html.ActionLink("Login Users", "LoginIndex", "Audits")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END UTILITY -->
+ <!-- BEGIN STUDENT/STAF -->
+                    <li>
+                        <a href="#"><i class="fa fa-users"></i> <span class="nav-label">Manage Student/Staff</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Students <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Add Student", "Create", "Students")</li>
+                                    <li>@Html.ActionLink("View UnderGraduate", "Index", "Students")</li>
+                                    @*<li>@Html.ActionLink("View Part-Time", "PartTimeIndex", "Students")</li>*@
+                                    <li>@Html.ActionLink("View Pre-Degree", "PredegreeIndex", "Students")</li>
+                                    <li>@Html.ActionLink("View Post-Graduate", "PostGraduateIndex", "Students")</li>
+                                    <li>@Html.ActionLink("Excel Upload", "UploadStudent", "Students")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Staff <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Add Staff", "Create", "Staffs")</li>
+                                    <li>@Html.ActionLink("View Academic", "Index", "Staffs")</li>
+                                    <li>@Html.ActionLink("View None-Academic", "NoneAcademicStaff", "Staffs")</li>
+                                    <li>@Html.ActionLink("Staff Excel Upload", "UploadStaff", "Staffs")</li>
+                                </ul>
+                            </li>
+                            @*<li class="gui-folder">
+                                    <a href="javascript:void(0);">
+                                        <span class="title">Pre-Degree</span>
+                                    </a>
+                                    <!--start submenu -->
+                                    <ul>
+                                        <li>@Html.ActionLink("Add Student", "Create", "PreDegreeStudents")</li>
+                                        <li>@Html.ActionLink("List Student", "Index", "PreDegreeStudents")</li>
+                                        <li>@Html.ActionLink("Upload Student ", "UploadStudent", "PreDegreeStudents")</li>
+                                        <li><a href="#">Excel Upload</a></li>
+                                    </ul><!--end /submenu -->
+                                </li><!--end /menu-li -->*@
+                        </ul>
+                    </li>
+ <!-- END STUDENT/STAF -->
+
+ <!-- BEGIN STAFF MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-user-secret"></i> <span class="nav-label">Staff Management</span><span class="label label-info pull-right">NEW</span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Leave Management <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Leave Type", "Index", "LeaveTypes")</li>
+                                    <li>@Html.ActionLink("Leave Application", "Index", "LeaveApplications")</li>
+                                    <li>@Html.ActionLink("Approved Applications", "UnApproved", "LeaveApplications")</li>
+                                    <li><a href="#">Staff On Leave</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END STAFF MANAGEMENT -->
+ <!-- BEGIN COURSE MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-book"></i> <span class="nav-label">Course Management</span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("View Course", "Index", "Courses")</li>
+                            <li>@Html.ActionLink("Approve Course Registration", "RegisteredStudents", "CourseRegistrations")</li>
+                            <li>@Html.ActionLink("Assign Course", "Index", "AssignedCourses")</li>
+                            <li>@Html.ActionLink("Upload Course Materials", "Create", "CourseUploads")</li>
+                            <li>@Html.ActionLink("Search Course Materials", "Index", "CourseUploads")</li>
+                        </ul>
+                    </li>
+ <!-- END COURSE MANAGEMENT -->
+ <!-- BEGIN FEE MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-credit-card"></i> <span class="nav-label">Fee Management</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Payment Setting", "Index", "PaymentSettings")</li>
+
+                            <li>
+                                <a href="#" id="damian">Set Payment Type <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Type", "Index", "SchoolFeeTypes")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Type", "Index", "FacultyFeeTypes")</li>
+                                    <li>@Html.ActionLink("Dept Fee Type", "Index", "DepartmentFeeTypes")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Set Late Payment <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Fine", "Index", "SchoolFeeSettings")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Type", "Index", "FacultyFeeSettings")</li>
+                                    <li>@Html.ActionLink("Department Fine", "Index", "DepartmentFeeSettings")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Remita Settings <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Faculty Settings", "Index", "FacultyRemitaSettings")</li>
+                                    <li>@Html.ActionLink("Department Settings", "Index", "DepartmentRemitaSettings")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Payment Record <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Payment", "VerifySchoolFee", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Acceptance Fee Payment", "VerifyAcceptanceFee", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Payment", "Index", "FacultyFeePayments")</li>
+                                    <li>@Html.ActionLink("Dept Fee payment", "Index", "DepartmentFeePayments")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END FEE MANAGEMENT -->
+ <!-- BEGIN RESULT MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-certificate"></i> <span class="nav-label">Results</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Manage Grade/Weight", "Index", "Grades")</li>
+                            <li>
+                                <a href="#" id="damian">Manage Assessment <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Create Assessment", "CreateCaView", "ContinuousAssessments")</li>
+                                    <li>@Html.ActionLink("View Assessment ", "Index", "ContinuousAssessments")</li>
+                                    <li><a href="#"> Upload Assessment</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Compute Result <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("View Result", "Index", "Results")</li>
+                                    <li>@Html.ActionLink("Compute Result", "Create", "Results")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Transcript Management <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Generate Transcript", "Create", "Students")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END RESULT MANAGEMENT -->
+ <!-- BEGIN LIBRARY MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i> <span class="nav-label">Library Management</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">School <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Add New Book", "Create", "Books")</li>
+                                    <li>@Html.ActionLink("View Books", "Index", "Books")</li>
+                                    <li>
+                                        <a href="#" id="damian">Students <span class="fa arrow"></span></a>
+                                        <ul class="nav nav-third-level">
+                                            <li>@Html.ActionLink("View Borrowed Books", "Index", "BookIssues")</li>
+                                            <li>@Html.ActionLink(" Search Book", "Search", "Books")</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Online <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("E-Book", "Ebook77", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Genesis Lib", "GenesisLib", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("EBSCO Journals", "Ebsco", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("GLOWN", "Glown", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Science Direct", "ScienceDirect", "CourseUploads")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END LIBRARY MANAGEMENT -->
+
+ <!-- E Learning -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i> <span class="nav-label">E-Learning </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Course SetUp <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Add Course Module", "Create", "Modules")</li>
+                                    <li>@Html.ActionLink("Add Topics", "Create", "Topics")</li>
+                                    <li>@Html.ActionLink("Add Topics Materials", "Create", "TopicMaterials")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Online Course <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Submit Assignement", "Create", "StudentAssignments")</li>
+                                    <li>@Html.ActionLink("View Assignments", "Create", "StudentAssignments")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END E Learning -->
+ <!-- BEGIN Accommodation -->
+                    <li>
+                        <a href="#"><i class="fa fa-home"></i> <span class="nav-label">Accommodation </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Hostel", "Index", "Hostels")</li>
+                            <li>@Html.ActionLink("Blocks", "Index", "Blocks")</li>
+                            <li>@Html.ActionLink("Rooms", "Index", "Rooms")</li>
+                            <li>@Html.ActionLink("Reserve Room", "ReservedIndex", "Rooms")</li>
+                            <li>@Html.ActionLink("Assign To Faculty", "Index", "AssignedHostels")</li>
+                            <li>
+                                <a href="#" id="damian">Available Hostel <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Make Available", "Index", "SessionAccomodations")</li>
+                                    <li>@Html.ActionLink("View Assigned Hostel", "Index", "AssignedRooms")</li>
+                                    <li>@Html.ActionLink("View RoomMates", "MyRoomMate", "AssignedRooms")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END Accommodation -->
+ <!-- BEGIN Admission -->
+                    <li>
+                        <a href="#"><i class="fa fa-graduation-cap"></i> <span class="nav-label">Admission </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("School Programme", "Index", "SchoolProgrammes")</li>
+                            <li>@Html.ActionLink("Programme Course", "Index", "AvailableCourses")</li>
+                            <li>@Html.ActionLink("O Level Subject", "Index", "Subjects")</li>
+                            <li>@Html.ActionLink("Undergraduate Rule", "Index", "UnderGraduateRules")</li>
+                            <li>@Html.ActionLink("Applicant Fee Setting", "Index", "ApplicantFeeSettings")</li>
+                            <li>@Html.ActionLink("UTME Applicants", "Index", "UtmeApplicants")</li>
+                            <li>@Html.ActionLink("Grade Points", "Index", "AdmissionGrades")</li>
+                            <li>
+                                <a href="#" id="damian">Applicants <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("View Applicants", "Index", "Applicants")</li>
+                                    <li><a href="#">Notify Applicants</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END Admission -->
+ <!-- BEGIN Data/Report -->
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i> <span class="nav-label">Data/Report</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>
+                                <a href="#" id="damian">Fees <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Payment", "SchoolFeePayment", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("School Fee Defaulters", "SchoolFeeDefaulters", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Accomodation", "AccommodationFeeReport", "AssignedRooms")</li>
+                                    <li>@Html.ActionLink("Hostel Application", "HostelApplicationReport", "AssignedRooms")</li>
+                                    <li>@Html.ActionLink("Faculty Payment", "FacultyFeeReport", "FacultyFeePayments")</li>
+                                    <li>@Html.ActionLink("Department Payment", "DeptFeeReport", "DepartmentFeePayments")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Students <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("UnRegistered List", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Graduated Student", "GraduatedStudent", "Students")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Staffs <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Teaching Staff", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Non-Teaching Staff", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Staff on Leave", "GraduatedStudent", "Students")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Course <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Registered Student", "RegisteredStudent", "CourseRegistrations")</li>
+                                    <li>@Html.ActionLink("UnRegistered Student", "UnRegisteredStudent", "CourseRegistrations")</li>
+                                    <li>@Html.ActionLink("Courses in Department", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Courses with Material", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Accommodation <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Block History", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Room History", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Uncleared Student", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Results <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Best Results", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("CarryOver Students", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Uncleared Student", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END Data/Report -->
+ <!-- BEGIN CBTE -->
+                    <li>
+                        <a href="#"><i class="fa fa-steam-square"></i> <span class="nav-label">CBTE Management </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Manage Questions <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Add Questions", "Create", "QuestionAnswers")</li>
+                                    <li>@Html.ActionLink("View Questions", "Index", "QuestionAnswers")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Exam Type <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Add Exam Type", "Create", "ExamTypes")</li>
+                                    <li>@Html.ActionLink("View Exam Types ", "Index", "ExamTypes")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Exam Rule <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Create Rule", "Create", "ExamRules")</li>
+                                    <li>@Html.ActionLink("View Rules ", "Index", "ExamRules")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Exam Settings <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Schedule Exam", "Create", "ExamSettings")</li>
+                                    <li>@Html.ActionLink("View Exam Schedule", "Index", "ExamSettings")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END CBTE -->
+
+ <!-- BEGIN Role/Profile -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Role Management </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("View Roles", "Index", "RolesAdmin")</li>
+                            <li>@Html.ActionLink("Manage User Role", "ManageUserRoles", "RolesAdmin")</li>
+                            <li>
+                                <a href="#" id="damian">Manage Account <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                                    <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+
+ <!-- END Role/profile -->
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Student"))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("StudentDashboard", "Students")"><i class="fa fa-th-large"></i>  <span class="nav-label">Student Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN FEE MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-credit-card"></i>  <span class="nav-label">Fee Management </span><span class="fa arrow"></span></a>
+
+                        <!--start sub-menu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Pay Fee <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Pay School Fee", "MakePayment", "SchoolFeePayments")</li>
+                                    @if (model.HasPayedAcceptanceFee.Equals(true))
+                                        {
+                                    <li>@Html.ActionLink("Pay Faculty Fee", "MakePayment", "FacultyFeePayments")</li>
+                                    <li>@Html.ActionLink("Pay Department Fee", "MakeDepartmentPayment", "DepartmentFeePayments")</li>
+
+                                        }
+                                </ul><!--end /submenu -->
+                            </li><!--end /menu-li -->
+                            <li>
+                                <a href="#" id="damian">Print Receipt <span class="fa arrow"></span></a>
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("School Fee", "Index", "SchoolFeePayments")</li>
+
+                                    @if (model.HasPayedAcceptanceFee.Equals(true))
+                                        {
+
+                                    <li>@Html.ActionLink("Faculty Fee", "Index", "FacultyFeePayments")</li>
+                                    <li>@Html.ActionLink("Department Fee", "Index", "DepartmentFeePayments")</li>
+                                        }
+                                </ul><!--end /submenu -->
+                            </li><!--end /menu-li -->
+                            <li>@Html.ActionLink("Query Transaction", "GetPaymentStatus", "RemitaServices")</li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END FEE MANAGEMENT -->
+                        if (model.HasPayedAcceptanceFee.Equals(true))
+                        {
+ <!-- BEGIN Student Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-soccer-ball-o"></i>  <span class="nav-label">Social </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("Group Chat", "GroupChat", "Home")</li>
+                            <li>@Html.ActionLink("Birthday", "StudentBirthdays", "Events")</li>
+
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END student Management -->
+
+ <!-- BEGIN Student Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Students")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Students")</li>
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END student Management -->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-book"></i>  <span class="nav-label">My Portfolio </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Add Parent/Guardian", "Create", "Guardians")</li>
+                            <li>@Html.ActionLink("Add Next Of Kin", "Create", "NextOfKins")</li>
+                            <li><a href="@Url.Action("Create", "Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create", "Addresses")">Personal Address</a></li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+                        }
+                        if (model.HasPayedSchoolFee.Equals(true))
+                        {
+ <!-- BEGIN Course -->
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i>  <span class="nav-label">Course Management </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Course Reg History", "RegisteredCourse", "CourseRegistrations")</li>
+                            <li>@Html.ActionLink("Register Course", "Create", "CourseRegistrations")</li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END Course -->
+ <!-- BEGIN E-Classroom -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Learning</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("My Courses", "StudentsIndex", "ELearning")</li>
+                            <li>@Html.ActionLink("View All Assignments", "Index", "StudentAssignments")</li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END E ClassRoom -->
+ <!-- BEGIN E-Learning -->
+                    <li>
+                        <a href="#"><i class="fa fa-book"></i>  <span class="nav-label">E-Library Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#"><i class="fa fa-sitemap"></i>  <span class="nav-label">E-Library</span><span class="fa arrow"></span></a>
+
+                                <!--start submenu -->
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("E-Book", "Ebook77", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Genesis Lib", "GenesisLib", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("EBSCO Journals", "Ebsco", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("GLOWN", "Glown", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Science Direct", "ScienceDirect", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Search Books", "Index", "CourseUploads")</li>
+                                </ul><!--end /submenu -->
+                            </li><!--end /menu-li -->
+
+                            <li>
+                                <a href="#"><i class="fa fa-sitemap"></i>  <span class="nav-label">School Library</span><span class="fa arrow"></span></a>
+
+                                <!--start submenu -->
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("Search For Books", "Search", "Books")</li>
+                                    <li>@Html.ActionLink("View Borrowed Books", "Index", "BookIssues")</li>
+                                </ul><!--end /submenu -->
+                            </li><!--end /menu-li -->
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END E Learning -->
+ <!-- BEGIN Accomodation -->
+                    <li>
+                        <a href="#"><i class="fa fa-grav"></i>  <span class="nav-label">Accommodation</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("HostelApplication", "AssignedRooms")"> Book Accomodation</a></li>
+                            <li><a href="@Url.Action("StudentDetails", "AssignedRooms")"> View Allocated Space</a></li>
+                            <li>@Html.ActionLink("View RoomMates", "MyRoomMate", "AssignedRooms")</li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END Accomodation -->
+ <!-- BEGIN Result -->
+                    <li>
+                        <a href="#"><i class="fa fa-graduation-cap"></i>  <span class="nav-label">Result Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Check My Results", "StudentResult", "Results")</li>
+                            <li>@Html.ActionLink("View Assessments", "Index", "ContinuousAssessments")</li>
+                            <li><a href="@Url.Action("CalculateCgpa", "Results")">GPA/CGPA Calculator</a></li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END Result -->
+ <!-- BEGIN CBTE -->
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i>  <span class="nav-label">CBTE Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Select Paper", "SelectSubject", "TakeExam")</li>
+                            <li>@Html.ActionLink("Check Previous Exam", "SelectSubject", "TakeExam")</li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+ <!--end /menu-li -->
+ <!-- END CBTE -->
+                        }
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole(RoleName.Applicant))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li class="active">
+                        <a href="@Url.Action("ApplicantDashBoard","Home")"><i class="fa fa-th-large"></i>  <span class="nav-label">Dashboards</span>  </a>
+                    </li>
+                    <li> <a href="@Url.Action("ApplicantDashBoard","Home")"><i class="fa fa-info"></i>  <span class="nav-label">Instructions</span></a></li>
+
+ <!-- END DASHBOARD -->
+
+                        if (model.HasPayedApplicationFee.Equals(true))
+                        {
+ <!-- BEGIN Applicant Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">Manage Profile </span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Edit profile", "Edit", "Applicants")</li>
+                            <li>@Html.ActionLink("View Profile", "Details", "Applicants")</li>
+                            <li>@Html.ActionLink("Add Olevel Result", "Create", "ApplicantOLevelResults")</li>
+                            <li>@Html.ActionLink("Add Jamb Result", "Create", "ApplicantJambscores")</li>
+                            <li><a href="#">Upload Certificates</a></li>
+                            <li>@Html.ActionLink("Add SchoolAttended", "Create", "AttendedSchools")</li>
+
+                            <li>@Html.ActionLink("Add Parent/Guardian", "Create", "ApplicantSponsors")</li>
+                        </ul>
+                    </li>
+ <!-- BEGIN FEE MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-money"></i>  <span class="nav-label">Fee Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Print Payment Reciept", "Details", "ApplicantPayments")</li>
+                        </ul>
+                    </li>
+ <!-- END FEE MANAGEMENT -->
+                        }
+                        else
+                        {
+                    <li><a href="@Url.Action("Create","ApplicantPayments")"><i class="fa fa-money"></i>  <span class="nav-label">Make Payment</span>  </a></li>
+
+                        }
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Dean"))
+                    {
+
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("StaffDashboard", "Staffs")"><i class="fa fa-th-large"></i>  <span class="nav-label">Dean Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+
+ <!-- BEGIN Profile Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Staffs")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Staffs")</li>
+
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul>
+                    </li>
+ <!--End Profile Management-->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-card"></i>  <span class="nav-label">My Portfolio</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","NextOfKins")">Add Next of Kin</a></li>
+                            <li><a href="@Url.Action("Create","Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create","Referees")">Referee</a></li>
+                            <li><a href="@Url.Action("Create","Addresses")">Personal Address</a></li>
+                        </ul>
+                    </li>
+ <!-- END Portfolio -->
+ <!-- BEGIN Leave -->
+                    <li>
+                        <a href="#"><i class="fa fa-beer"></i>  <span class="nav-label">Staff Management </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("UnApproved","LeaveApplications")">Pending Leave Requests</a></li>
+                            <li><a href="#">Staff on Leave</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Leave Application</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- BEGIN Course -->
+                    <li>
+                        <a href="#"><i class="fa fa-certificate"></i>  <span class="nav-label">Course Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            @*<li>@Html.ActionLink("Approve Course Registration", "RegisteredStudents", "CourseRegistrations")</li>*@
+                            <li>@Html.ActionLink("View Course Registration", "UnRegisteredStudent", "CourseRegistrations")</li>
+                            @*<li>@Html.ActionLink("Assigned Course", "Index", "AssignedCourses")</li>*@
+                            <li>@Html.ActionLink("My Assigned Course", "LecturerIndex", "AssignedCourses")</li>
+                        </ul>
+                    </li>
+ <!-- END Course -->
+ <!-- BEGIN FEE MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-credit-card"></i>  <span class="nav-label">Fee Management </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Faculty Fee Type", "Index", "FacultyFeeTypes")</li>
+                            <li>@Html.ActionLink("Faculty Fee payment", "Index", "FacultyFeePayments")</li>
+                        </ul>
+                    </li>
+ <!-- END FEE MANAGEMENT -->
+
+ <!-- BEGIN E-Learning -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Learning Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#"><span class="nav-label">E-Library</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("E-Book", "Ebook77", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Genesis Lib", "GenesisLib", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("EBSCO Journals", "Ebsco", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("GLOWN", "Glown", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Science Direct", "ScienceDirect", "CourseUploads")</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="#"><span class="nav-label">Journals/Publication</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("Create Publication", "Create", "Posts")</li>
+                                    <li>@Html.ActionLink("View Publications", "Index", "Posts")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END E Learning -->
+ <!-- BEGIN E-Classroom -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Classroom</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("My Courses", "Index", "ELearning")</li>
+
+                            <li>@Html.ActionLink("View Assignments", "Index", "StudentAssignments")</li>
+                        </ul>
+                    </li>
+ <!-- END E ClassRoom -->
+ <!-- BEGIN Result -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-graduation-cap"></i>  <span class="nav-label">Result Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("View Assessment", "Index", "ContinuousAssessments")</li>
+                            <li>@Html.ActionLink("Create Assessment", "CreateCaView", "ContinuousAssessments")</li>
+                        </ul>
+                    </li>
+ <!-- END Result -->
+ <!-- BEGIN CBTE -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-sitemap"></i>  <span class="nav-label">CBTE Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("Add Questions", "Create", "QuestionAnswers")</li>
+                            <li>@Html.ActionLink("View Questions", "Index", "QuestionAnswers")</li>
+                        </ul>
+                    </li>
+ <!-- END CBTE -->
+ <!-- BEGIN SETINGS -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Settings</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                        </ul>
+                    </li>
+
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Hod"))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("StaffDashboard", "Staffs")"><i class="fa fa-th-large"></i>  <span class="nav-label">Hod Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN Profile Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Staffs")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Staffs")</li>
+
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul>
+                    </li>
+ <!--End Profile Management-->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-card"></i>  <span class="nav-label">My Portfolio</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","NextOfKins")">Add Next of Kin</a></li>
+                            <li><a href="@Url.Action("Create","Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create","Referees")">Referee</a></li>
+                            <li><a href="@Url.Action("Create","Addresses")">Personal Address</a></li>
+                        </ul>
+                    </li>
+ <!-- END Portfolio -->
+ <!-- BEGIN Course -->
+                    <li>
+                        <a href="#"><i class="fa fa-certificate"></i>  <span class="nav-label">Course Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Approve Course Registration", "RegisteredStudents", "CourseRegistrations")</li>
+                            <li>@Html.ActionLink("View Course Registration", "UnRegisteredStudent", "CourseRegistrations")</li>
+                            <li>@Html.ActionLink("Assigned Course", "Index", "AssignedCourses")</li>
+                            <li>@Html.ActionLink("My Assigned Course", "LecturerIndex", "AssignedCourses")</li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Course -->
+ <!-- BEGIN FEE MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-credit-card"></i>  <span class="nav-label">Fee Management </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Dept Fee Type", "Index", "DepartmentFeeTypes")</li>
+                            <li>@Html.ActionLink("Dept Fee payment", "Index", "DepartmentFeePayments")</li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END FEE MANAGEMENT -->
+ <!-- BEGIN Leave -->
+                    <li>
+                        <a href="#"><i class="fa fa-beer"></i>  <span class="nav-label">Staff Management </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("UnApproved","LeaveApplications")">Pending Leave Requests</a></li>
+                            <li><a href="#">Staff on Leave</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Leave Application</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END leave -->
+ <!-- BEGIN E-Learning -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Learning Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#"><span class="nav-label">E-Library</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("E-Book", "Ebook77", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Genesis Lib", "GenesisLib", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("EBSCO Journals", "Ebsco", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("GLOWN", "Glown", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Science Direct", "ScienceDirect", "CourseUploads")</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="#"><span class="nav-label">Journals/Publication</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("Create Publication", "Create", "Posts")</li>
+                                    <li>@Html.ActionLink("View Publications", "Index", "Posts")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- BEGIN E-Classroom -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Classroom</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("My Courses", "Index", "ELearning")</li>
+
+                            <li>@Html.ActionLink("View Assignments", "Index", "StudentAssignments")</li>
+                        </ul>
+                    </li>
+ <!-- END E ClassRoom -->
+ <!-- BEGIN Result -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-graduation-cap"></i>  <span class="nav-label">Result Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("View Assessment", "Index", "ContinuousAssessments")</li>
+                            <li>@Html.ActionLink("Create Assessment", "CreateCaView", "ContinuousAssessments")</li>
+                        </ul>
+                    </li>
+ <!-- END Result -->
+ <!-- BEGIN CBTE -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-sitemap"></i>  <span class="nav-label">CBTE Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("Add Questions", "Create", "QuestionAnswers")</li>
+                            <li>@Html.ActionLink("View Questions", "Index", "QuestionAnswers")</li>
+                        </ul>
+                    </li>
+ <!-- END CBTE -->
+ <!-- BEGIN LEVELS -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Settings</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                        </ul>
+                    </li>
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Bursar"))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("StaffDashboard", "Staffs")"><i class="fa fa-th-large"></i>  <span class="nav-label">Bursar Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN Profile Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Staffs")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Staffs")</li>
+
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul>
+                    </li>
+ <!--End Profile Management-->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-card"></i>  <span class="nav-label">My Portfolio</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","NextOfKins")">Add Next of Kin</a></li>
+                            <li><a href="@Url.Action("Create","Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create","Referees")">Referee</a></li>
+                            <li><a href="@Url.Action("Create","Addresses")">Personal Address</a></li>
+                        </ul>
+                    </li>
+ <!-- END Portfolio -->
+ <!-- BEGIN E-Learning -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Learning Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#"><span class="nav-label">E-Library</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("E-Book", "Ebook77", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Genesis Lib", "GenesisLib", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("EBSCO Journals", "Ebsco", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("GLOWN", "Glown", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Science Direct", "ScienceDirect", "CourseUploads")</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="#"><span class="nav-label">Journals/Publication</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("Create Publication", "Create", "Posts")</li>
+                                    <li>@Html.ActionLink("View Publications", "Index", "Posts")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END E Learning -->
+ <!-- BEGIN FEE MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-credit-card"></i> <span class="nav-label">Fee Management</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#" id="damian">Set Payment Type <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Type", "Index", "SchoolFeeTypes")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Type", "Index", "FacultyFeeTypes")</li>
+                                    <li>@Html.ActionLink("Dept Fee Type", "Index", "DepartmentFeeTypes")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Set Late Payment <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Fine", "Index", "SchoolFeeSettings")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Type", "Index", "FacultyFeeSettings")</li>
+                                    <li>@Html.ActionLink("Department Fine", "Index", "DepartmentFeeSettings")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Remita Settings <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Faculty Settings", "Index", "FacultyRemitaSettings")</li>
+                                    <li>@Html.ActionLink("Department Settings", "Index", "DepartmentRemitaSettings")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Payment Record <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Fee Payment", "VerifySchoolFee", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Acceptance Fee Payment", "VerifyAcceptanceFee", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Faculty Fee Payment", "Index", "FacultyFeePayments")</li>
+                                    <li>@Html.ActionLink("Dept Fee payment", "Index", "DepartmentFeePayments")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END FEE MANAGEMENT -->
+ <!-- BEGIN Data/Report -->
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i> <span class="nav-label">Data/Report</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>
+                                <a href="#" id="damian">Fees <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Payment", "SchoolFeePayment", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("School Fee Defaulters", "SchoolFeeDefaulters", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Accomodation", "AccommodationFeeReport", "AssignedRooms")</li>
+                                    <li>@Html.ActionLink("Hostel Application", "HostelApplicationReport", "AssignedRooms")</li>
+                                    <li>@Html.ActionLink("Faculty Payment", "FacultyFeeReport", "FacultyFeePayments")</li>
+                                    <li>@Html.ActionLink("Department Payment", "DeptFeeReport", "DepartmentFeePayments")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Students <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("UnRegistered List", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Graduated Student", "GraduatedStudent", "Students")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Staffs <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Teaching Staff", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Non-Teaching Staff", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Staff on Leave", "GraduatedStudent", "Students")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Course <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Registered Student", "RegisteredStudent", "CourseRegistrations")</li>
+                                    <li>@Html.ActionLink("UnRegistered Student", "UnRegisteredStudent", "CourseRegistrations")</li>
+                                    <li>@Html.ActionLink("Courses in Department", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Courses with Material", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Accommodation <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Block History", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Room History", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Uncleared Student", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Results <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Best Results", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("CarryOver Students", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Uncleared Student", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END Data/Report -->
+ <!-- BEGIN Role/Profile -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Role Management </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                        </ul>
+                    </li>
+
+ <!-- END Role/profile -->
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Registrar"))
+                    {
+
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("StaffDashboard", "Staffs")"><i class="fa fa-th-large"></i>  <span class="nav-label">Registrar Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN Profile Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Staffs")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Staffs")</li>
+
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul>
+                    </li>
+ <!--End Profile Management-->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-card"></i>  <span class="nav-label">My Portfolio</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","NextOfKins")">Add Next of Kin</a></li>
+                            <li><a href="@Url.Action("Create","Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create","Referees")">Referee</a></li>
+                            <li><a href="@Url.Action("Create","Addresses")">Personal Address</a></li>
+                        </ul>
+                    </li>
+ <!-- END Portfolio -->
+ <!-- BEGIN RESULT MANAGEMENT -->
+                    <li>
+                        <a href="#"><i class="fa fa-certificate"></i> <span class="nav-label">Results</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Manage Grade/Weight", "Index", "Grades")</li>
+                            <li>
+                                <a href="#" id="damian">Manage Assessment <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Create Assessment", "CreateCaView", "ContinuousAssessments")</li>
+                                    <li>@Html.ActionLink("View Assessment ", "Index", "ContinuousAssessments")</li>
+                                    <li><a href="#"> Upload Assessment</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Compute Result <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("View Result", "Index", "Results")</li>
+                                    <li>@Html.ActionLink("Compute Result", "Create", "Results")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Transcript Management <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Generate Transcript", "Create", "Students")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END RESULT MANAGEMENT -->
+ <!-- BEGIN E-Learning -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Learning Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#"><span class="nav-label">E-Library</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("E-Book", "Ebook77", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Genesis Lib", "GenesisLib", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("EBSCO Journals", "Ebsco", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("GLOWN", "Glown", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Science Direct", "ScienceDirect", "CourseUploads")</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="#"><span class="nav-label">Journals/Publication</span><span class="fa fa-arrow-down"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("Create Publication", "Create", "Posts")</li>
+                                    <li>@Html.ActionLink("View Publications", "Index", "Posts")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END E Learning -->
+ <!-- BEGIN Admission -->
+                    <li>
+                        <a href="#"><i class="fa fa-graduation-cap"></i> <span class="nav-label">Admission </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("School Programme", "Index", "SchoolProgrammes")</li>
+                            <li>@Html.ActionLink("Programme Course", "Index", "AvailableCourses")</li>
+                            <li>@Html.ActionLink("O Level Subject", "Index", "Subjects")</li>
+                            <li>@Html.ActionLink("Undergraduate Rule", "Index", "UnderGraduateRules")</li>
+                            <li>@Html.ActionLink("Applicant Fee Setting", "Index", "ApplicantFeeSettings")</li>
+                            <li>
+                                <a href="#" id="damian">Applicants <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("View Applicants", "Index", "Applicants")</li>
+                                    <li><a href="#">Notify Applicants</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END Admission -->
+ <!-- BEGIN Data/Report -->
+                    <li>
+                        <a href="#"><i class="fa fa-sitemap"></i> <span class="nav-label">Data/Report</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>
+                                <a href="#" id="damian">Fees <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("School Payment", "SchoolFeePayment", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("School Fee Defaulters", "SchoolFeeDefaulters", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Accomodation", "AccommodationFeeReport", "AssignedRooms")</li>
+                                    <li>@Html.ActionLink("Hostel Application", "HostelApplicationReport", "AssignedRooms")</li>
+                                    <li>@Html.ActionLink("Faculty Payment", "FacultyFeeReport", "FacultyFeePayments")</li>
+                                    <li>@Html.ActionLink("Department Payment", "DeptFeeReport", "DepartmentFeePayments")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Students <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("UnRegistered List", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Graduated Student", "GraduatedStudent", "Students")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Staffs <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Teaching Staff", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Non-Teaching Staff", "InActiveStudent", "Students")</li>
+                                    <li>@Html.ActionLink("Staff on Leave", "GraduatedStudent", "Students")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Course <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Registered Student", "RegisteredStudent", "CourseRegistrations")</li>
+                                    <li>@Html.ActionLink("UnRegistered Student", "UnRegisteredStudent", "CourseRegistrations")</li>
+                                    <li>@Html.ActionLink("Courses in Department", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Courses with Material", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Accommodation <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Block History", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Room History", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Uncleared Student", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#" id="damian">Results <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level">
+                                    <li>@Html.ActionLink("Best Results", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("CarryOver Students", "Index", "Applicants")</li>
+                                    <li>@Html.ActionLink("Uncleared Student", "Index", "Applicants")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END Data/Report -->
+ <!-- BEGIN SETINGS -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Settings</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                        </ul>
+                    </li>
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Librarian"))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li class="active">
+                        <a href="@Url.Action("StaffDashboard", "Staffs")"><i class="fa fa-th-large"></i>  <span class="nav-label">Librarian Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li class="active">
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN Profile Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Staffs")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Staffs")</li>
+
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul>
+                    </li>
+ <!--End Profile Management-->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-card"></i>  <span class="nav-label">My Portfolio</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","NextOfKins")">Add Next of Kin</a></li>
+                            <li><a href="@Url.Action("Create","Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create","Referees")">Referee</a></li>
+                            <li><a href="@Url.Action("Create","Addresses")">Personal Address</a></li>
+                        </ul>
+                    </li>
+ <!-- END Portfolio -->
+
+ <!-- BEGIN SETINGS -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Settings</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                        </ul>
+                    </li>
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("Academic"))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("StaffDashboard", "Staffs")"><i class="fa fa-th-large"></i>  <span class="nav-label">Lecturer Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN Profile Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Staffs")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Staffs")</li>
+
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul>
+                    </li>
+ <!--End Profile Management-->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-card"></i>  <span class="nav-label">My Portfolio</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","NextOfKins")">Add Next of Kin</a></li>
+                            <li><a href="@Url.Action("Create","Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create","Referees")">Referee</a></li>
+                            <li><a href="@Url.Action("Create","Addresses")">Personal Address</a></li>
+                        </ul>
+                    </li>
+ <!-- END Portfolio -->
+ <!-- BEGIN Leave Management -->
+                    <li class="nav nav-second-level collapse">
+                        <a href="#"><i class="fa fa-beer"></i>  <span class="nav-label">Fee Management </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","LeaveApplications")">Leave Application</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Application Status</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END E Leave Management -->
+ <!-- BEGIN Events -->
+                    <li class="nav nav-second-level collapse">
+                        <a href="#"><i class="fa fa-beer"></i>  <span class="nav-label">Events </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul>
+                            <li><a href="@Url.Action("Birthdays","Events")">Birthdays</a></li>
+                            <li><a href="#">Upcoming Event</a></li>
+                            <li><a href="#">My Colleagues</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Events -->
+ <!-- BEGIN Course -->
+                    <li>
+                        <a href="#"><i class="fa fa-certificate"></i>  <span class="nav-label">Course Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("View  Assigned Course", "LecturerIndex", "AssignedCourses")</li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Course -->
+ <!-- BEGIN E-Learning -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Learning Management</span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#"><span class="nav-label">E-Library</span><span class="pull-right fa fa-arrow"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("E-Book", "Ebook77", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Genesis Lib", "GenesisLib", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("EBSCO Journals", "Ebsco", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("GLOWN", "Glown", "CourseUploads")</li>
+                                    <li>@Html.ActionLink("Science Direct", "ScienceDirect", "CourseUploads")</li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="#"><span class="nav-label">Journals/Publication</span><span class="pull-right fa fa-arrow"></span></a>
+
+                                <ul class="nav nav-second-level collapse">
+                                    <li>@Html.ActionLink("Create Publication", "Create", "Posts")</li>
+                                    <li>@Html.ActionLink("View Publications", "Index", "Posts")</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+ <!-- END E Learning -->
+ <!-- BEGIN E-Classroom -->
+                    <li>
+                        <a href="#"><i class="fa fa-desktop"></i>  <span class="nav-label">E-Classroom</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("My Courses", "Index", "ELearning")</li>
+
+                            <li>@Html.ActionLink("View Assignments", "Index", "StudentAssignments")</li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END E ClassRoom -->
+ <!-- BEGIN Result -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-graduation-cap"></i>  <span class="nav-label">Result Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("View Assessment", "Index", "ContinuousAssessments")</li>
+                            <li>@Html.ActionLink("Create Assessment", "CreateCaView", "ContinuousAssessments")</li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Result -->
+ <!-- BEGIN CBTE -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-sitemap"></i>  <span class="nav-label">CBTE Management</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("Add Questions", "Create", "QuestionAnswers")</li>
+                            <li>@Html.ActionLink("View Questions", "Index", "QuestionAnswers")</li>
+                        </ul>
+                    </li>
+ <!-- END CBTE -->
+ <!-- BEGIN LEVELS -->
+ <!-- BEGIN SETINGS -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Settings</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                        </ul><!--end /submenu -->
+                    </li>
+
+                    }
+                    else if (Request.IsAuthenticated && User.IsInRole("None_Academic"))
+                    {
+ <!-- BEGIN DASHBOARD -->
+                    <li>
+                        <a href="@Url.Action("StaffDashboard", "Staffs")"><i class="fa fa-th-large"></i>  <span class="nav-label">Dean Dashboard</span>  </a>
+                    </li>
+ <!-- END DASHBOARD -->
+ <!-- BEGIN MAILING -->
+                    <li>
+                        <a href="@Url.Action("Index", "Mailling")"><i class="fa fa-envelope"></i> <span class="nav-label">Mail</span> </a>
+                    </li>
+ <!-- END MAILING -->
+ <!-- BEGIN Profile Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>  <span class="nav-label">My Profile</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+
+                            <li>@Html.ActionLink("View Profile", "Details", "Staffs")</li>
+                            <li>@Html.ActionLink("Edit Profile", "Edit", "Staffs")</li>
+
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                            <li>@Html.ActionLink("Add Phone Number", "AddPhoneNumber", "Manage")</li>
+                        </ul>
+                    </li>
+ <!--End Profile Management-->
+ <!-- BEGIN Portfolio -->
+                    <li>
+                        <a href="#"><i class="fa fa-address-card"></i>  <span class="nav-label">My Portfolio</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","NextOfKins")">Add Next of Kin</a></li>
+                            <li><a href="@Url.Action("Create","Qualifications")">Academic Qualifications</a></li>
+                            <li><a href="@Url.Action("Create","Referees")">Referee</a></li>
+                            <li><a href="@Url.Action("Create","Addresses")">Personal Address</a></li>
+                        </ul>
+                    </li>
+ <!-- END Portfolio -->
+ <!-- BEGIN Leave Management -->
+                    <li>
+                        <a href="#"><i class="fa fa-beer"></i>  <span class="nav-label">Fee Management </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","LeaveApplications")">Leave Application</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Application Status</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END E Leave Management -->
+                        if (Request.IsAuthenticated && User.IsInRole("Registry"))
+                        {
+ <!-- BEGIN Registry Function -->
+                    <li>
+                        <a href="#"><i class="fa fa-registered"></i>  <span class="nav-label">Registry </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("StudentInfo","Students")">Student Info</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Academic Info</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Admission Applicants</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Registered Students</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Registry Function -->
+                        }
+                        if (Request.IsAuthenticated && User.IsInRole("Bursary"))
+                        {
+ <!-- BEGIN Bursary Function -->
+                    <li>
+                        <a href="#"><i class="fa fa-beer"></i>  <span class="nav-label">Bursary </span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse">
+                            <li>
+                                <a href="#"><span class="nav-label">Verify Payment</span><span class="fa fa-arrow-down"></span></a>
+
+                                <!--start submenu -->
+                                <ul>
+                                    <li>@Html.ActionLink("School Fees", "VerifySchoolFee", "SchoolFeePayments")</li>
+                                    <li>@Html.ActionLink("Acceptance Fee", "VerifySchoolFee", "SchoolFeePayments")</li>
+                                </ul><!--end /submenu -->
+                            </li><!--end /menu-li -->
+                            <li><a href="@Url.Action("SchoolFeePayment","SchoolFeePayments")">Fee Reporting</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Bursary Function -->
+                        }
+                        if (Request.IsAuthenticated && User.IsInRole("StudentAffairs"))
+                        {
+ <!-- BEGIN Student Affairs Function -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-beer"></i>  <span class="nav-label">Student Affairs </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("Create","LeaveApplications")">Leave Application</a></li>
+                            <li><a href="@Url.Action("Index","LeaveApplications")">Application Status</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Bursary Function -->
+                        }
+                        if (Request.IsAuthenticated && User.IsInRole("Security"))
+                        {
+ <!-- BEGIN Security Function -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-bullseye"></i>  <span class="nav-label">Security </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="@Url.Action("StudentInfo","Students")">Search Student</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Security Function -->
+                        }
+ <!-- BEGIN Events -->
+                    <li class="gui-folder">
+                        <a href="#"><i class="fa fa-clock-o"></i>  <span class="nav-label">Event Management </span><span class="fa arrow"></span></a>
+
+                        <!--start submenu -->
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="#">Birthdays</a></li>
+                            <li><a href="#">Upcoming Event</a></li>
+                            <li><a href="#">My Colleagues</a></li>
+                        </ul><!--end /submenu -->
+                    </li><!--end /menu-li -->
+ <!-- END Events -->
+ <!-- BEGIN SETINGS -->
+                    <li>
+                        <a href="#"><i class="fa fa-lock"></i>  <span class="nav-label">Settings</span><span class="fa arrow"></span></a>
+
+                        <ul class="nav nav-second-level collapse">
+                            <li>@Html.ActionLink("Settings", "Index", "Manage")</li>
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Manage")</li>
+                        </ul>
+                    </li>
+                    }
+
+                </ul>
+                <div class="menubar-foot-panel">
+                    <small class="no-linebreak hidden-folded">
+                        <span class="opacity-75">
+                            @*<img alt="CompunetLimted" class="img-responsive" src="~/Content/Images/compunetLogo.png" width="200" hiegth="50" />*@
+                        </span>
+                    </small>
+                </div>
+            </div>
+
+        </nav>
+
+        <div id="page-wrapper" class="gray-bg dashbard-1">
+            <div class="row border-bottom">
+                <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                    <br />
+                    <div class="nav navbar-top-links navbar-left">
+                        @*<form role="search" class="navbar-form-custom" action="http://webapplayers.com/inspinia_admin-v2.7.1/search_results.html">
+                                 <div class="form-group">
+                                     <input type="text" placeholder="Search for something..." class="form-control" name="top-search" id="top-search">
+                                 </div>
+                            </form>*@
+                        <div class="row margin-top-5">
+                            <div class="col-md-2 col-md-push-1 border-right">
+                                <a class="navbar-minimalize btn btn-primary border-right" href="#"><i class="fa fa-bars"></i>  </a>
+                            </div>
+                            <div class="col-md-10 col-md-push-1">
+                                <img class="img-responsive navbar-form-custom" src="~/Content/Images/@SchoolSetUp.SchoolBanner" />
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="nav navbar-top-links navbar-right">
+                        <li>
+                            <span class="m-r-sm text-muted welcome-message">Welcome <span class="text-bold">@ViewBag.FullName</span></span>
+                        </li>
+
+                        <li>
+                            <a href="@Url.Action("LogOff","Account")">
+                                <i class="fa fa-sign-out"></i> Log out
+                            </a>
+                        </li>
+                        @*<li>
+                                <a class="right-sidebar-toggle">
+                                    <i class="fa fa-codepen"></i><span>Chat</span>
+                                </a>
+                            </li>*@
+                    </ul>
+                </nav>
+            </div>
+            @RenderBody()
+        </div>
+    </div>
+    @*<div class="message-area">
+        </div>
+        <div id="small-chat">
+
+            <span class="badge badge-warning pull-right">0</span>
+            <a class="open-small-chat">
+                <i class="fa fa-comments"></i>
+            </a>
+        </div>
+        <div id="right-sidebar" class="animated">
+            <div class="sidebar-container">
+
+                <div class="tab-content">
+
+                    <div id="tab-1" class="tab-pane active">
+
+                        <div class="sidebar-title">
+                            <h3>  <i class="fa fa-commenting"></i> Online Users</h3>
+                        </div>
+
+                        <div id="contact-list">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+
+
+
+    <!--End of Tawk.to Script-->
+    <!-- Mainly scripts -->
+    @*@Scripts.Render("~/bundles/bootstrap")*@
+    <script src="~/Scripts/jquery-3.2.1.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/AdminTemplate/js/plugins/nestable/jquery.nestable.js"></script>
+    <script src="~/AdminTemplate/js/plugins/idle-timer/idle-timer.min.js"></script>
+
+
+    @*<script>
+        var activeChats = 0;
+        var username = '@User.Identity.GetUserName()';
+        var chat = $.connection.chatHub;
+        var readmoreCount = 0;
+        $(document).ready(function () {
+
+            $(document).idleTimer(50000);
+            //Create connection object  from signalR
+            var userimage = "/images/DP/dummy.png";
+
+            chat.client.onGetUser = function (list, loginDate, userimg) {
+                var waitingList = list;
+                //loop through logged in users
+                for (var i = 0; i < waitingList.length; i++) {
+                    AddUser(list[i].Id, list[i].UserName, userimg);
+                }
+
+            };
+
+            //Function initiated by the server side due to sent private message by another user
+            chat.client.sendPrivateMessage = function (windowId, fromUserName, message, userimg, CurrentDateTime) {
+                var d = new Date();
+                var h = d.getHours();
+                var m = d.getMinutes();
+                var time = h + ':' + m;
+                msg = chatformat_msg(message, fromUserName, time);
+                //Check if chatbox has been created/exits (append if true else create new chatbox, append message and show)
+                if ($('#' + windowId).hasClass("active")) {
+                    $(".message-area #user-window" + windowId + " .content").append(msg);
+                    $(".message-area #user-window" + windowId + " .content").scrollTop($(".message-area #user-window" + windowId + " .content")[0].scrollHeight);
+
+                } else {
+                    $('#' + windowId).toggleClass("active");
+                    if ($(".message-area #user-window" + windowId).length) {
+
+                        $(".message-area #user-window" + windowId).removeClass("minimizeit").show();
+                        $(".message-area #user-window" + windowId + " .content").append(msg);
+                        $(".message-area #user-window" + windowId + " .content").scrollTop($(".message-area #user-window" + windowId + " .content")[0].scrollHeight);
+                        $('#small-chat span').html(activeChats);
+                        console.log('Private Message Received');
+                    } else {
+                        activeChats = activeChats + 1;
+                        var userId = '@User.Identity.GetUserId()';
+                        chat.server.loadPrivateMessage(userId, windowId);
+                        var html = '<div class="small-chat-box fadeInRight animated user-window" id= "user-window' + windowId + '" data-user-id="' + windowId + '">';
+                        html += '<div class="heading" draggable="true">';
+                        html += '<small class="chat-date pull-right">';
+                        html += '<a href="#"><i class="fa fa-close" onclick="close_box(\'' + windowId + '\')"></i></a>';
+                        html += '</small>' + fromUserName;
+                        html += '</div>';
+                        html += '<div class="content">' + msg;
+                        html += '</div>';
+                        html += '<div class="form-chat">';
+                        html += '<div class="input-group input-group-sm">';
+                        html += '<input type="text" class="form-control chatMessage" data-user-id="' + windowId + '" id="chat' + windowId + '">';
+                        html += '<span class="input-group-btn">';
+                        html += '<button class="btn btn-primary sendMessage" type="button" onclick="sendMessage(\'' + windowId + '\')">Send';
+                        html += '</button>';
+                        html += '</span>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '</div>';
+                        $(".message-area").append(html);
+                        $(".message-area").removeClass('showit');
+                        $('#small-chat span').html(activeChats);
+                        $(".message-area #user-window" + windowId + " .content").scrollTop($(".message-area #user-window" + windowId + " .content")[0].scrollHeight);
+
+                    }
+                }
+            };
+
+            //Function initiated by the server side to load previous group chat messages
+            chat.client.getGroupMessages = function (list) {
+                var receivedMessages = list;
+
+                for (var i = 0; i < receivedMessages.length; i++) {
+                    var html = formatGroupChat(receivedMessages[i].Name, receivedMessages[i].Message);
+                    $('.chat-discussion').prepend(html);
+                    $(".chat-discussion").scrollTop($(".chat-discussion")[0].scrollHeight);
+                }
+
+            };
+
+            //Function initiated by the server side to load previous private chat messages
+            chat.client.FetchPrivateMessages = function (list) {
+                var receivedMessages = list;
+                var userId = '@User.Identity.GetUserId()';
+
+                for (var i = 0; i < receivedMessages.length; i++) {
+                    if (receivedMessages[i].SenderId === userId) {
+                        var msg = chatformat_msg(receivedMessages[i].Message, username, receivedMessages[i].MessageDate);
+                        $(".message-area #user-window" + receivedMessages[i].RecieverId + " .content").prepend(msg);
+                        $(".message-area #user-window" + receivedMessages[i].RecieverId + " .content").scrollTop($(".message-area #user-window" + receivedMessages[i].RecieverId + " .content")[0].scrollHeight);
+                    } else {
+                        var msg = chatformat_msg(receivedMessages[i].Message, receivedMessages[i].RecieverUserName, receivedMessages[i].MessageDate);
+                        $(".message-area #user-window" + receivedMessages[i].SenderId + " .content").prepend(msg);
+                        $(".message-area #user-window" + receivedMessages[i].SenderId + " .content").scrollTop($(".message-area #user-window" + receivedMessages[i].SenderId + " .content")[0].scrollHeight);
+                    }
+                }
+
+            };
+
+            //Function initiated by the server side due to sent group message by another user
+            chat.client.addNewMessageToPage = function (name, message, userCount, list) {
+                var d = new Date();
+                var h = d.getHours();
+                var m = d.getMinutes();
+
+                var html = formatGroupChat(name, message);
+                $('.chat-discussion').append(html);
+                $(".chat-discussion").scrollTop($(".chat-discussion")[0].scrollHeight);
+            };
+
+            //Call back function for hub.start making a call to ChatHub class (c#)
+            $.connection.hub.start().done(function () {
+                var userId = '@User.Identity.GetUserId()';
+                var conId = $.connection.hub.id;
+                chat.server.registerUser(userId, conId);
+                //calls getUser on ChatHub class (c#) which initiates chat.client.onGetUser
+                chat.server.getUser();
+            });
+
+            //Enter keypress function to listen and send private message
+            $(document).on('keypress', ".chatMessage", function (e) {
+                if (e.keyCode == 13) {
+                    var id = $(this).attr("data-user-id");
+                    var msg = $(this).val();
+                    var userId = '@User.Identity.GetUserId()';
+                    //send message to recipient
+                    chat.server.sendPrivateMessage(id, msg, userId);
+                    var d = new Date();
+                    var h = d.getHours();
+                    var m = d.getMinutes();
+                    var time = h + ':' + m;
+                    msg = chatformat_msg(msg, username, time);
+                    //Add message to senders chat window
+                    $(".message-area #user-window" + id + " .content").append(msg);
+                    $(this).val("");
+                    $(this).focus();
+                    $(".message-area #user-window" + id + " .content").scrollTop($(".message-area #user-window" + id + " .content")[0].scrollHeight);
+                    e.preventDefault();
+                }
+            });
+
+            //Enter keypress function to listen and send group message
+            $(document).on('keypress', ".message-input", function (e) {
+                if (e.keyCode === 13) {
+                    var msg = $(this).val();
+                    //send message to recipient
+                    chat.server.send(username, msg);
+                    $(this).val('').focus();
+                    e.preventDefault();
+
+                }
+            });
+
+            $('#small-chat').on('click', function () {
+                $('.message-area').toggleClass('showit');
+            });
+        });
+
+        $(document).on("idle.idleTimer", function (event, elem, obj) {
+            toastr.options = {
+                "positionClass": "toast-top-right",
+                "timeOut": 8000
+            }
+            toastr.warning('You can call any function after idle timeout.', 'Idle time');
+                $('.custom-alert').fadeIn();
+                $('.custom-alert-active').fadeOut();
+
+
+           // window.open('@Url.Action("LogOff", "Account", new { url = Request.Url.ToString() })', '_self');
+
+        });
+
+        $(document).on("active.idleTimer", function (event, elem, obj, triggerevent) {
+            // function you want to fire when the user becomes active again
+            toastr.clear();
+            $('.custom-alert').fadeOut();
+            toastr.success('Great that you decided to move a mouse.', 'You are back. ');
+        });
+
+
+
+        //AddUser function to add users to online users list
+        function AddUser(id, username, userimage) {
+            //create html template for user being added to the list
+            var html = '<div class="sidebar-message" id="chat_user_' + id + '" data-user-id="' + id + '" onclick="openChatBox(\'chat_user_' + id + '\')">';
+                html += '<a href="#">';
+                html += '<div class="pull-left text-center">';
+                html += '<img alt="image" class="img-circle message-avatar" src="' + userimage + '">';
+                html += '</div>';
+                html += '<div class="media-body">';
+                html += '<span>'+username+'</span>';
+                html += '<br>';
+                html += '<small class="text-muted">Available</small>';
+                html += '</div>';
+                html += '</a>';
+                html += '</div>';
+            $('#contact-list').append(html);
+        }
+
+        //Toggle chat box display
+        function openChatBox(userId) {
+            var name = $('#' + userId).find("a .media-body span").html();
+            var id = $('#' + userId).attr("data-user-id");
+            //var status = $('#' + userId).find(".user-info .status").attr("data-status");
+
+            if ($('#' + userId).hasClass("active")) {
+                $('#' + userId).toggleClass("active");
+                $(".message-area #user-window" + id).hide();
+                activeChats = activeChats < 1 ? 0 : activeChats - 1;
+                $('#small-chat span').html(activeChats);
+
+            } else {
+                $('#' + userId).toggleClass("active");
+
+                //Check if chatbox has been created/exits (show if true else create new chatbox and show)
+                if ($(".message-area #user-window" + id).length) {
+                    $(".message-area #user-window" + id).removeClass("minimizeit").show();
+                    $(".message-area #user-window" + id + " .content").scrollTop($(".message-area #user-window" + id + " .content")[0].scrollHeight);
+                    activeChats = activeChats + 1;
+                    $('#small-chat span').html(activeChats);
+                } else {
+                    //var msg = chatformat_msg('Wow! What a Beautiful theme!', 'receive', name);
+                    //msg += chatformat_msg('Yes! Crest Admin Theme ;)', 'sent', 'You');
+                    activeChats = activeChats + 1;
+                    $('#small-chat span').html(activeChats);
+                    var userId = '@User.Identity.GetUserId()';
+                    chat.server.loadPrivateMessage(userId, id);
+                         //chat.server.sendPrivateMessage(id, msg, userId);
+                    var html = '<div class="small-chat-box fadeInRight animated user-window" id= "user-window' + id + '" data-user-id="' + id + '">';
+                        html += '<div class="heading" draggable="true">';
+                        html += '<small class="pull-right">';
+                        html += '<a href="#"><i class="fa fa-close" onclick="close_box(\''+id+'\')"></i></a>';
+                        html += '</small>'+name;
+                        html += '</div>';
+                        html += '<div class="content">';
+                        html += '</div>';
+                        html += '<div class="form-chat">';
+                        html += '<div class="input-group input-group-sm">';
+                        html += '<input type="text" class="form-control chatMessage" data-user-id="' + id + '" id="chat' + id + '">';
+                        html += '<span class="input-group-btn">';
+                        html += '<button class="btn btn-primary sendMessage" type="button" onclick="sendMessage(\'' + id + '\')">Send';
+                        html += '</button>';
+                        html += '</span>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '</div>';
+                        $(".message-area").append(html);
+                        $(".message-area #user-window" + id + " .content").scrollTop($(".message-area #user-window" + id + " .content")[0].scrollHeight);
+                }
+            }
+            $(".message-area").removeClass('showit');
+        }
+
+        //formatGroupChat function to format group chat
+        function formatGroupChat(name, message) {
+            var d = new Date();
+            var h = d.getHours();
+            var m = d.getMinutes();
+            if (name === username) {
+                var html = '<div class="chat-message right">' +
+                    '<img class="message-avatar" src="/images/DP/dummy.png" alt="">' +
+                    '<div class="message">' +
+                    '<a class="message-author" href="#">' + name + '</a>' +
+                    '<span class="message-date">' + h + ':' + m + '</span>' +
+                    '<span class="message-content">' + message +
+                    '</span>' +
+                    '</div>' +
+                    '</div>';
+                return html;
+            } else {
+                var html = '<div class="chat-message left">' +
+                    '<img class="message-avatar" src="/images/DP/dummy.png" alt="">' +
+                    '<div class="message">' +
+                    '<a class="message-author" href="#">' + name + '</a>' +
+                    '<span class="message-date">' + h + ':' + m + '</span>' +
+                    '<span class="message-content">' + message +
+                    '</span>' +
+                    '</div>' +
+                    '</div>';
+                return html;
+            }
+        }
+
+        //create format for message to display in chat box
+        function chatformat_msg(msg, name, time) {
+
+            if (name === username) {
+
+                if (msg === '') {
+                    return "";
+                }
+                else {
+                    html = '<div class="right">';
+                    html += '<div class="author-name">' + 'You' + ' ';
+                    html += '<small class="chat-date">' + time;
+                    html += '</small>';
+                    html += '</div>';
+                    html += '<div class="chat-message">' + msg;
+                    html += '</div>';
+                    html += '</div>';
+                    return html;
+                }
+            } else {
+                if (msg === '') {
+                    return "";
+                }
+                else {
+                    html = '<div class="left">';
+                    html += '<div class="author-name">' + name + ' ';
+                    html += '<small class="chat-date">' + time;
+                    html += '</small>';
+                    html += '</div>';
+                    html += '<div class="chat-message active">' + msg;
+                    html += '</div>';
+                    html += '</div>';
+                    return html;
+                }
+            }
+        }
+
+        function fetchGroupMessages() {
+            readmoreCount = readmoreCount + 20;
+            chat.server.sendGroupMessages(readmoreCount);
+        }
+
+        function sendMessage(userId) {
+            var id = userId;
+            console.log(id);
+                var msg = $('#chat' + id).val();
+                var userId = '@User.Identity.GetUserId()';
+                    //send message to recipient
+                chat.server.sendPrivateMessage(id, msg, userId);
+                var d = new Date();
+                var h = d.getHours();
+                var m = d.getMinutes();
+                var time = h + ':' + m;
+                msg = chatformat_msg(msg, username, time);
+                    //Add message to senders chat window
+                    $(".message-area #user-window" + id + " .content").append(msg);
+                    $('#chat'+id).val("");
+                    $('#chat' + id).focus();
+                    $(".message-area #user-window" + id + " .content").scrollTop($(".message-area #user-window" + id + " .content")[0].scrollHeight);
+                    e.preventDefault();
+        }
+
+        function close_box(id) {
+                console.log(id);
+                $('#user-window' + id).hide();
+                activeChats = activeChats < 1 ? 0 : activeChats - 1;
+                $('#small-chat span').html(activeChats);
+        }
+        </script>*@
+
+    <script src="~/AdminTemplate/js/bootstrap.min.js"></script>
+    <script src="~/AdminTemplate/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+    <script src="~/AdminTemplate/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="~/AdminTemplate/js/plugins/dataTables/datatables.min.js"></script>
+
+    <!-- jQuery UI -->
+    <script src="~/AdminTemplate/js/plugins/jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- Toastr -->
+    <script src="~/AdminTemplate/js/plugins/toastr/toastr.min.js"></script>
+    <script src="~/AdminTemplate/js/plugins/sparkline/jquery.sparkline.min.js"></script>
+
+    <!--Flot Chat-->
+    <script src="~/AdminTemplate/js/plugins/flot/jquery.flot.js"></script>
+    <script src="~/AdminTemplate/js/plugins/flot/jquery.flot.tooltip.min.js"></script>
+    <script src="~/AdminTemplate/js/plugins/flot/jquery.flot.resize.js"></script>
+    <script src="~/AdminTemplate/js/plugins/flot/jquery.flot.pie.js"></script>
+    <script src="~/AdminTemplate/js/plugins/flot/jquery.flot.time.js"></script>
+    <script src="~/AdminTemplate/js/plugins/flot/jquery.flot.categories.js"></script>
+    <!-- Custom and plugin javascript -->
+    <script src="~/AdminTemplate/js/inspinia.js"></script>
+    <script src="~/AdminTemplate/js/plugins/pace/pace.min.js"></script>
+    @*@Scripts.Render("~/bundles/jquery")*@
+
+    <!-- Mainly scripts -->
+    <script src="~/AdminTemplate/js/plugins/fullcalendar/moment.min.js"></script>
+    <script src="~/AdminTemplate/js/bootstrap.min.js"></script>
+    <script src="~/AdminTemplate/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+    <script src="~/AdminTemplate/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+
+    <!-- Custom and plugin javascript -->
+    <script src="~/AdminTemplate/js/inspinia.js"></script>
+    <script src="~/AdminTemplate/js/plugins/pace/pace.min.js"></script>
+
+    <!-- jQuery UI  -->
+    <script src="~/AdminTemplate/js/plugins/jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- iCheck -->
+    <script src="~/AdminTemplate/js/plugins/iCheck/icheck.min.js"></script>
+
+    <!-- Full Calendar -->
+    <script src="~/AdminTemplate/js/plugins/fullcalendar/fullcalendar.min.js"></script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
