@@ -137,11 +137,9 @@
 
     $(document).ready(function () {
         var startDay, startVal, endDay, eventCourse, eventBuilding, eventStartTime, eventEndTime;
-        $('#btnSave').click(function () {
+        $('#btnSave').click(function (e) {
             eventCourse = $('#txtcourse').val();
             eventBuilding = $('#txtbuilding').val();
-            eventStartTime = $('#txtstarttime').val();
-            eventEndTime = $('#txtendtime').val();
             var eventData;
             if (eventCourse) {
                 eventData = {
@@ -153,6 +151,43 @@
                 $('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
             }
             $('#calendar').fullCalendar('unselect');
+
+            //Ajax Request after submit button clicked.
+            var formData = {
+                coursetitle: eventCourse,
+                coursebuilding: eventBuilding,
+                start: new Date(startBin),
+                end: new Date(endDay)
+            };
+
+            console.log(formData);
+
+            $.ajax({
+                type: "POST",
+                contentType: 'application/json',
+                //processData:false,
+                dataType: 'json',
+                url: "",
+                data: JSON.stringify(formData),
+                success: function (data) {
+                    if (data.status) {
+                        swal({
+                            title: "Saved Successfully!!!",
+                            text: "schedule more courses.",
+                            type: "info",
+                        });
+                        toastr["success"](data.message);
+                    } else {
+                        swal({
+                            title: "Warning",
+                            text: data.message,
+                            type: "warning",
+                        });
+                        toastr["success"](data.message);
+                    }
+                }
+            });
+            e.preventDefault();
             $('#myModal6').modal('toggle');
         });
 
