@@ -1,4 +1,4 @@
-﻿<div class="row wrapper border-bottom white-bg page-heading">
+<div class="row wrapper border-bottom white-bg page-heading">
     <div class="col-lg-8">
         <h2>Calendar</h2>
         <ol class="breadcrumb">
@@ -167,8 +167,9 @@
                 contentType: 'application/json',
                 //processData:false,
                 dataType: 'json',
-                url: "",
+                url:"/Home/TimeTable",
                 data: JSON.stringify(formData),
+                //JSON.stringify(formData)
                 success: function (data) {
                     if (data.status) {
                         swal({
