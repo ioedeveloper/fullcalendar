@@ -137,6 +137,7 @@
 
     $(document).ready(function () {
         var startDay, startVal, endDay, eventCourse, eventBuilding, eventStartTime, eventEndTime;
+        var events = [];
         $('#btnSave').click(function (e) {
             eventCourse = $('#txtcourse').val();
             eventBuilding = $('#txtbuilding').val();
@@ -167,7 +168,7 @@
                 contentType: 'application/json',
                 //processData:false,
                 dataType: 'json',
-                url:"/Home/TimeTable",
+                url: "/Home/SaveTimeTable",
                 data: JSON.stringify(formData),
                 //JSON.stringify(formData)
                 success: function (data) {
@@ -192,55 +193,64 @@
             $('#myModal6').modal('toggle');
         });
 
-
-        /* initialize the calendar
-         -----------------------------------------------------------------*/
-        var date = new Date();
-        var d = date.getDate();
-        var m = date.getMonth();
-        var y = date.getFullYear();
-
-        $('#calendar').fullCalendar({
-            header: {
-                theme: true,
-                left: 'prev,next today',
-                center: 'title',
-                right: 'month,agendaWeek,agendaDay'
-            },
-            defaultView: 'agendaWeek',
-            navLinks: true, // can click day/week names to navigate views
-            selectable: true,
-            selectHelper: true,
-            select: function (start, end) {
-                startBin = start;
-                var strDate = new Date(start);
-                console.log(strDate);
-                startDay = strDate.getDay();
-
-                endDay = end;
-                strDate = new Date(end);
-                console.log(strDate);
-                $('#myModal6').modal('toggle');
-
-            },
-            editable: true,
-            eventResize: function (event, delta, revertFunc) {
-                alert(event.title + " end is now " + event.end.format());
-                if (!confirm("is this okay?")) {
-                    revertFunc();
+        $.ajax({
+            type: "GET",
+            url: "./TimetableList",
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    var sd = new Date(data[i][2]);
+                    var ed = new Date(data[i][3]);
+                    var list = {
+                        dow: [sd.getDay()],
+                        title: data[i][0],
+                        start: sd,
+                        end: ed
+                    }
+                    events.push(list);
                 }
-            },
-            eventLimit: true, // allow "more" link when too many events
-            events: [
-                {
-                    dow: [1],
-                    title: 'All Day Event',
-                    start: new Date(y, m, 1)
-                    //url: 'http://google.com/'
-                },
-            ]
-        });
+                /* initialize the calendar
+         -----------------------------------------------------------------*/
+                var date = new Date();
+                var d = date.getDate();
+                var m = date.getMonth();
+                var y = date.getFullYear();
 
+                $('#calendar').fullCalendar({
+                    header: {
+                        theme: true,
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'month,agendaWeek,agendaDay'
+                    },
+                    defaultView: 'agendaWeek',
+                    navLinks: true, // can click day/week names to navigate views
+                    selectable: true,
+                    selectHelper: true,
+                    select: function (start, end) {
+                        startBin = start;
+                        var strDate = new Date(start);
+                        console.log(strDate);
+                        startDay = strDate.getDay();
+
+                        endDay = end;
+                        strDate = new Date(end);
+                        console.log(strDate);
+                        $('#myModal6').modal('toggle');
+
+                    },
+                    editable: true,
+                    eventResize: function (event, delta, revertFunc) {
+                        alert(event.title + " end is now " + event.end.format());
+                        if (!confirm("is this okay?")) {
+                            revertFunc();
+                        }
+                    },
+                    eventLimit: true, // allow "more" link when too many events
+                    events: events
+                });
+                console.log(events);
+            }
+        });
 
     });
 
